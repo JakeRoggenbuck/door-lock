@@ -5,22 +5,21 @@ from mfrc522 import SimpleMFRC522
 from time import sleep
 
 
-
 READER = SimpleMFRC522()
 DATABASE = Database()
 GPIO.setmode(GPIO.BCM)
-
 
 REPLAY_PIN = 17
 GPIO.setup(REPLAY_PIN, GPIO.OUT)
 GPIO.output(REPLAY_PIN, 0)
 
 
-def setup():
+def setup_new_database():
     DATABASE.create_table()
 
 
 def write_data_to_key(data: str):
+    """Write a string of data to a card"""
     did_complete = False
     try:
         READER.write(data)
@@ -33,6 +32,7 @@ def write_data_to_key(data: str):
 
 
 def read_key():
+    """Read a card, read() will wait until it reads then return"""
     did_complete = False
     try:
         id, text = READER.read()
@@ -45,6 +45,7 @@ def read_key():
 
 
 def create_key():
+    """Get user input then write the card, and write to the database"""
     key_info = input("Key info: ")
     if len(key_info) > 180:
         print("Make info shorter")
@@ -73,24 +74,29 @@ def create_key():
 
 
 def unlock():
+    """Open the solenoid for 30 seconds then close it"""
     GPIO.output(REPLAY_PIN, 1)
     sleep(30)
     GPIO.output(REPLAY_PIN, 0)
 
 
 def main_read():
+    key = read_key()
+    if key is not None:
+        id, data = key
+        data = data.strip()
+        perms = DATABASE.check_key(data)
+        if perms == Permission(3):
+            unlock()
+        elif perms == Permission(2):
+            unlock()
+        elif perms == Permission(1):
+            unlock()
+
+
+def main_loop():
     while 1:
-        key = read_key()
-        if key is not None:
-            id, data = key
-            data = data.strip()
-            perms = DATABASE.check_key(data)
-            if perms == Permission(3):
-                unlock()
-            elif perms == Permission(2):
-                unlock()
-            elif perms == Permission(1):
-                unlock()
+        main_read()
 
 
 def parse_args():
@@ -105,9 +111,9 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     if args.m:
-        main_read()
+        main_loop()
     elif args.s:
-        setup()
+        setup_new_database()
     elif args.w:
         create_key()
     elif args.v:
