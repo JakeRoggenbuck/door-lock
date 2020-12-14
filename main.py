@@ -5,11 +5,11 @@ from mfrc522 import SimpleMFRC522
 from time import sleep
 
 
+GPIO.setmode(GPIO.BCM)
 READER = SimpleMFRC522()
 DATABASE = Database()
-GPIO.setmode(GPIO.BCM)
 
-REPLAY_PIN = 17
+REPLAY_PIN = 26
 GPIO.setup(REPLAY_PIN, GPIO.OUT)
 GPIO.output(REPLAY_PIN, 0)
 
