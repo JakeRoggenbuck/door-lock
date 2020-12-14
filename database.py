@@ -55,6 +55,7 @@ class Database:
         cursor = self.db.cursor()
         cursor.execute(sql, (data,))
         found = cursor.fetchone()
+        print(found)
         if found is not None:
             return Permission(found[2])
         else:

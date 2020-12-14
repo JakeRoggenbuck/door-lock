@@ -1,7 +1,8 @@
 import argparse
 from database import Database, Permission
-import Rpi.GPIO as GPIO
+import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
+
 
 
 READER = SimpleMFRC522()
@@ -64,13 +65,23 @@ def create_key():
         print("Failed to write data")
 
 
+def unlock():
+    pass
+
+
 def main_read():
     while 1:
         key = read_key()
         if key is not None:
             id, data = key
+            data = data.strip()
             perms = DATABASE.check_key(data)
-            print(perms)
+            if perms == Permission(3):
+                unlock()
+            elif perms == Permission(2):
+                unlock()
+            elif perms == Permission(1):
+                unlock()
 
 
 def parse_args():
@@ -78,6 +89,7 @@ def parse_args():
     parse.add_argument("-m", help="Main read loop", action='store_true')
     parse.add_argument("-w", help="Write a key", action='store_true')
     parse.add_argument("-v", help="View all of the keys", action='store_true')
+    parse.add_argument("-s", help="Setup", action='store_true')
     return parse.parse_args()
 
 
@@ -85,6 +97,8 @@ if __name__ == "__main__":
     args = parse_args()
     if args.m:
         main_read()
+    elif args.s:
+        setup()
     elif args.w:
         create_key()
     elif args.v:
