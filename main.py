@@ -2,11 +2,18 @@ import argparse
 from database import Database, Permission
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
+from time import sleep
 
 
 
 READER = SimpleMFRC522()
 DATABASE = Database()
+GPIO.setmode(GPIO.BCM)
+
+
+REPLAY_PIN = 17
+GPIO.setup(REPLAY_PIN, GPIO.OUT)
+GPIO.output(REPLAY_PIN, 0)
 
 
 def setup():
@@ -66,7 +73,9 @@ def create_key():
 
 
 def unlock():
-    pass
+    GPIO.output(REPLAY_PIN, 1)
+    sleep(30)
+    GPIO.output(REPLAY_PIN, 0)
 
 
 def main_read():
